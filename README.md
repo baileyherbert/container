@@ -88,10 +88,10 @@ You can also enable dependency injection on a **class method** by applying the `
 ```ts
 @Singleton()
 export class ClassType {
-	@Injectable()
-	public methodWithDI() {
+    @Injectable()
+    public methodWithDI() {
 
-	}
+    }
 }
 ```
 
@@ -198,12 +198,12 @@ Here's a reliable pattern for storing the container that works even if the class
 import { resolver } from '@baileyherbert/common';
 
 export class DependencyInjectedClass {
-	protected container = resolver.getConstructorInstance();
+    protected container = resolver.getConstructorInstance();
 
-	public constructor() {
-		// Now all methods, including the constructor, has a reference to the container
-		this.container.resolve();
-	}
+    public constructor() {
+        // Now all methods, including the constructor, has a reference to the container
+        this.container.resolve();
+    }
 }
 ```
 
@@ -212,7 +212,7 @@ top level objects, like a root `App` object.
 
 ```ts
 export class DependencyInjectedClass {
-	protected container = resolver.getConstructorInstance();
-	protected app = this.container.resolve(App);
+    protected container = resolver.getConstructorInstance();
+    protected app = this.container.resolve(App);
 }
 ```
