@@ -1,5 +1,5 @@
 import { ReflectionClass } from '@baileyherbert/reflection';
-import { Type } from '@baileyherbert/types';
+import { Constructor, Type } from '@baileyherbert/types';
 import { ContainerDispatcher } from './ContainerDispatcher';
 import { registry } from './ContainerRegistry';
 import { resolver } from './ContainerResolver';
@@ -108,7 +108,7 @@ export class Container {
 			});
 		}
 
-		else {
+		else if (isConstructor(providerOrType)) {
 			this._providers.get(token)?.push({
 				provider: { useClass: providerOrType },
 				options
@@ -150,7 +150,7 @@ export class Container {
 			if (isNormalToken(to)) {
 				return this.register(from, { useToken: to }, { lifecycle: Lifecycle.Singleton });
 			}
-			else if (to) {
+			else if (isConstructor(to)) {
 				return this.register(from, { useClass: to }, { lifecycle: Lifecycle.Singleton });
 			}
 
@@ -284,7 +284,7 @@ export class Container {
 	 * @param type
 	 * @returns
 	 */
-	protected construct<T>(type: Type<T>): T {
+	protected construct<T>(type: Constructor<T>): T {
 		const paramTypes = registry.getConstructorParameters(type);
 
 		if (paramTypes === undefined) {
@@ -452,7 +452,7 @@ export class Container {
 
 }
 
-export type InjectionToken<T = any> = Type<T> | string | symbol;
+export type InjectionToken<T = any> = Type<T> | Constructor<T> | string | symbol;
 export type Provider<T = any> = ValueProvider<T> | ClassProvider<T> | TokenProvider<T> | FactoryProvider<T>;
 
 export interface ValueProvider<T> {
@@ -460,7 +460,7 @@ export interface ValueProvider<T> {
 }
 
 export interface ClassProvider<T> {
-	useClass: Type<T>;
+	useClass: Constructor<T>;
 }
 
 export interface TokenProvider<T> {
@@ -521,12 +521,16 @@ function isNormalToken(token?: InjectionToken): token is string | symbol {
 	return typeof token === 'string' || typeof token === 'symbol';
 }
 
-function isConstructorToken<T>(token?: InjectionToken<T>): token is Type<T> {
-	return typeof token === 'function';
+function isConstructorToken<T>(token?: InjectionToken<T>): token is Constructor<T> {
+	return isConstructor(token);
 }
 
-function isConstructor<T>(o: any): o is Type<T> {
-	return typeof o === 'function';
+function isConstructor<T>(o: any): o is Constructor<T> {
+	return (
+		typeof o === 'function' &&
+		o.hasOwnProperty('prototype') &&
+		typeof o.prototype.constructor === 'function'
+	);
 }
 
 function isClassObject(o: any): o is ClassObject {

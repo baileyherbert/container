@@ -1,4 +1,4 @@
-import { Type } from '@baileyherbert/types';
+import { Constructor } from '@baileyherbert/types';
 import { Lifecycle } from '../containers/Container';
 import { resolver } from '../containers/ContainerResolver';
 import { Injectable } from './Injectable';
@@ -7,10 +7,10 @@ import { Injectable } from './Injectable';
  * This decorator registers a class as a singleton in the global container instance. If a container name is
  * provided, then it will be registered on the specified named container instead.
  */
-export function Singleton(constructor: Type<any>): void;
-export function Singleton(): (constructor: Type<any>) => void;
-export function Singleton(containerName: string): (constructor: Type<any>) => void;
-export function Singleton(nameOrConstructor?: Type<any> | string) {
+export function Singleton(constructor: Constructor<any>): void;
+export function Singleton(): (constructor: Constructor<any>) => void;
+export function Singleton(containerName: string): (constructor: Constructor<any>) => void;
+export function Singleton(nameOrConstructor?: Constructor<any> | string) {
 	if (typeof nameOrConstructor === 'function') {
 		resolver.getGlobalInstance().register(
 			nameOrConstructor,
@@ -23,7 +23,7 @@ export function Singleton(nameOrConstructor?: Type<any> | string) {
 		return;
 	}
 
-	return function (constructor: Type<any>) {
+	return function (constructor: Constructor<any>) {
 		const container = (typeof nameOrConstructor === 'string') ?
 			resolver.getInstance(nameOrConstructor) :
 			resolver.getGlobalInstance();

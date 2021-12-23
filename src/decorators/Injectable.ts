@@ -1,5 +1,5 @@
 import { ReflectionClass } from '@baileyherbert/reflection';
-import { Type } from '@baileyherbert/types';
+import { Constructor } from '@baileyherbert/types';
 import { registry } from '../containers/ContainerRegistry';
 
 /**
@@ -7,7 +7,7 @@ import { registry } from '../containers/ContainerRegistry';
  *
  * Under the hood, this decorator registers type information with the container system.
  */
-export function Injectable(constructor: Type<any>): void;
+export function Injectable(constructor: Constructor<any>): void;
 export function Injectable(target: any, propertyKey: string, descriptor: PropertyDescriptor): void;
 export function Injectable(): (...args: any[]) => void;
 
