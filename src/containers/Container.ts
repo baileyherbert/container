@@ -294,7 +294,13 @@ export class Container {
 			);
 		}
 
-		const params = paramTypes.map(param => this.resolve(param));
+		const params = paramTypes.map(param => {
+			if (param.hasDefault && (!param.isKnownType || !param.isClassType || param.isPrimitiveType)) {
+				return;
+			}
+
+			return this.resolve(param.getType());
+		});
 
 		resolver._addConstructorInstance(this);
 		const instance = new type(...params);

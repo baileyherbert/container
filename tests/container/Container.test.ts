@@ -131,4 +131,20 @@ describe('Container', function() {
 		expect(resolved[0].value).toBe('parent');
 		expect(resolved[1].value).toBe('child');
 	});
+
+	it('can detect and skip optional dependencies', function() {
+		@Injectable
+		class Dep {}
+
+		@Injectable
+		class Test {
+			constructor(public dep: Dep, optional: boolean = true) {}
+		}
+
+		const container = new Container();
+		container.registerSingleton(Dep);
+		container.registerSingleton(Test);
+
+		const test = container.resolve(Test);
+	});
 });

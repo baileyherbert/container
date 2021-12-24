@@ -7,7 +7,7 @@ import { Type } from '@baileyherbert/types';
  */
 class ContainerRegistry {
 
-	protected classes = new Map<Type<any>, any[]>();
+	protected classes = new Map<Type<any>, ReflectionParameter<any>[]>();
 	protected methods = new Map<Type<any>, Map<string, ReflectionParameter<any>[]>>();
 
 	/**
@@ -20,15 +20,15 @@ class ContainerRegistry {
 	public register(reflection: ReflectionMethod<any>): void;
 	public register(reflection: ReflectionClass<any> | ReflectionMethod<any>): void {
 		if (reflection instanceof ReflectionClass) {
-			const types = reflection.getMetadata('design:paramtypes') ?? [];
-			this.classes.set(reflection.ref, types);
+			const params = reflection.getConstructorMethod().getParameters();
+			this.classes.set(reflection.target, params);
 		}
 		else if (reflection instanceof ReflectionMethod) {
-			if (!this.methods.has(reflection.class.ref)) {
-				this.methods.set(reflection.class.ref, new Map());
+			if (!this.methods.has(reflection.class.target)) {
+				this.methods.set(reflection.class.target, new Map());
 			}
 
-			const map = this.methods.get(reflection.class.ref)!;
+			const map = this.methods.get(reflection.class.target)!;
 			map.set(reflection.name, reflection.getParameters());
 		}
 	}
