@@ -104,6 +104,11 @@ describe('Container', function() {
 			public test(dep: Dependency) {
 				return dep;
 			}
+
+			@Injectable
+			public testWithOptionals(dep: Dependency, optional = true) {
+				return dep;
+			}
 		}
 
 		const container = new Container();
@@ -112,6 +117,7 @@ describe('Container', function() {
 		container.registerSingleton(Dependency);
 
 		expect(dispatcher.invoke(new Example(), 'test')).toBeInstanceOf(Dependency);
+		expect(dispatcher.invoke(new Example(), 'testWithOptionals')).toBeInstanceOf(Dependency);
 	});
 
 	it('can resolve multiple instances', function() {

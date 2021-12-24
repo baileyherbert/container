@@ -62,7 +62,7 @@ export class ContainerDispatcher {
 	public resolveParameters<T>(type: Type<T>, methodName: Key<T>): any[];
 	public resolveParameters<T>(object: T, methodName: Key<T>): any[];
 	public resolveParameters<T>(objectOrType: Type<T> | T, methodName: string): any[] {
-		const type = new ReflectionClass(objectOrType).ref;
+		const type = new ReflectionClass(objectOrType).target;
 		const parameters = registry.getMethodParameters(type, methodName);
 		const resolved = new Array<any>();
 
@@ -77,6 +77,11 @@ export class ContainerDispatcher {
 			const paramType = parameter.getType() as Type<any>;
 
 			if (typeof paramType === 'undefined') {
+				if (parameter.hasDefault) {
+					resolved.push(undefined);
+					continue;
+				}
+
 				throw new Error(
 					`The dispatcher couldn't resolve the type of the parameter at index ${parameter.index} for ` +
 					`${type.name}.${methodName} because it has an undefined type. Please ensure that you've set ` +
@@ -89,6 +94,11 @@ export class ContainerDispatcher {
 			}
 			else if (this.container.isRegistered(paramType, true) || !this.namedParameters.has(parameter.name)) {
 				if (isPrimitive(paramType)) {
+					if (parameter.hasDefault) {
+						resolved.push(undefined);
+						continue;
+					}
+
 					throw new Error(
 						`The dispatcher couldn't resolve a value for the "${parameter.name}" primitive parameter ` +
 						`on ${type.name}.${methodName}. ` +
