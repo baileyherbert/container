@@ -146,5 +146,24 @@ describe('Container', function() {
 		container.registerSingleton(Test);
 
 		const test = container.resolve(Test);
+		expect(test.dep).toBeInstanceOf(Dep);
+	});
+
+	it('does not need registration without constructor parameters', function() {
+		class Dep {
+			constructor() {}
+		}
+
+		@Injectable
+		class Test {
+			constructor(public dep: Dep) {}
+		}
+
+		const container = new Container();
+		container.registerSingleton(Dep);
+		container.registerSingleton(Test);
+
+		const test = container.resolve(Test);
+		expect(test.dep).toBeInstanceOf(Dep);
 	});
 });

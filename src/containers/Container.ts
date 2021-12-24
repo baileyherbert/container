@@ -288,6 +288,18 @@ export class Container {
 		const paramTypes = registry.getConstructorParameters(type);
 
 		if (paramTypes === undefined) {
+			if (isConstructor(type)) {
+				const ref = new ReflectionClass(type);
+
+				if (ref.getConstructorMethod().getParameters().length === 0) {
+					resolver._addConstructorInstance(this);
+					const instance = new type();
+					resolver._removeConstructorInstance();
+
+					return instance;
+				}
+			}
+
 			throw new Error(
 				`The container couldn't construct an instance of ${type.name} because no type information is known. ` +
 				'Have you added the `@Injectable` decorator to the class?'
