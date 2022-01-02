@@ -89,27 +89,23 @@ export class ContainerDispatcher {
 				);
 			}
 
-			if (this.typedParameters.has(paramType)) {
+			if (parameter.isKnownType && this.typedParameters.has(paramType)) {
 				resolved.push(this.typedParameters.get(paramType));
 			}
-			else if (this.container.isRegistered(paramType, true) || !this.namedParameters.has(parameter.name)) {
-				if (isPrimitive(paramType)) {
-					if (parameter.hasDefault) {
-						resolved.push(undefined);
-						continue;
-					}
-
-					throw new Error(
-						`The dispatcher couldn't resolve a value for the "${parameter.name}" primitive parameter ` +
-						`on ${type.name}.${methodName}. ` +
-						`This parameter requires a named value but no matching name was found in the dispatcher.`
-					);
-				}
-
+			else if (parameter.isReflectableType && this.container.isRegistered(paramType, true)) {
 				resolved.push(this.container.resolve(paramType));
 			}
-			else {
+			else if (this.namedParameters.has(parameter.name)) {
 				resolved.push(this.namedParameters.get(parameter.name));
+			}
+			else if (parameter.hasDefault) {
+				resolved.push(undefined);
+			}
+			else {
+				throw new Error(
+					`The dispatcher couldn't resolve a value for the "${parameter.name}" parameter ` +
+					`on ${type.name}.${methodName}.`
+				);
 			}
 		}
 
@@ -129,18 +125,6 @@ export class ContainerDispatcher {
 		return fn.apply(object, params);
 	}
 
-}
-
-function isPrimitive(type?: Function) {
-	switch (type) {
-		case String: return true;
-		case Number: return true;
-		case Object: return true;
-		case Boolean: return true;
-		case Function: return true;
-	}
-
-	return false;
 }
 
 type Return<T, K extends keyof T> = T[K] extends (...args: any[]) => any ? ReturnType<T[K]> : void;
