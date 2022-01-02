@@ -1,5 +1,6 @@
 export * from './containers/Container';
 export * from './containers/ContainerDispatcher';
+export * from './containers/TiedContainerDispatcher';
 export * from './containers/ContainerRegistry';
 export * from './containers/ContainerResolver';
 

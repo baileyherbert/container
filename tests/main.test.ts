@@ -4,6 +4,7 @@ describe('main', function() {
 	it('exports the expected items', function() {
 		expect(typeof Main.Container).toBe('function');
 		expect(typeof Main.ContainerDispatcher).toBe('function');
+		expect(typeof Main.TiedContainerDispatcher).toBe('function');
 		expect(typeof Main.Injectable).toBe('function');
 		expect(typeof Main.Singleton).toBe('function');
 		expect(typeof Main.Transient).toBe('function');
