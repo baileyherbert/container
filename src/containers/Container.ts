@@ -3,6 +3,7 @@ import { Constructor, Type } from '@baileyherbert/types';
 import { ContainerDispatcher } from './ContainerDispatcher';
 import { registry } from './ContainerRegistry';
 import { resolver } from './ContainerResolver';
+import { TiedContainerDispatcher } from './TiedContainerDispatcher';
 
 /**
  * A basic dependency injection container which creates and stores singletons.
@@ -466,6 +467,13 @@ export class Container {
 	 */
 	public createDispatcher() {
 		return new ContainerDispatcher(this);
+	}
+
+	/**
+	 * Creates a new tied dispatcher, which helps invoke the specified class method with dependency injection.
+	 */
+	public createTiedDispatcher(object: any, methodName: string | symbol) {
+		return new TiedContainerDispatcher(this, object, methodName);
 	}
 
 }

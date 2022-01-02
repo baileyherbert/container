@@ -129,6 +129,23 @@ describe('Container', function() {
 		dispatcher.setTypedParameter(Dependency, null);
 		expect(dispatcher.invoke(new Example(), 'testWithOptionals')[0]).toBe(null);
 	});
+
+	it('can create tied dispatchers', function() {
+		@Injectable
+		class Dependency {}
+
+		class Example {
+			@Injectable
+			public test(dep: Dependency) {
+				return dep;
+			}
+		}
+
+		const container = new Container();
+		const dispatcher = container.createTiedDispatcher(new Example(), 'test');
+
+		container.registerSingleton(Dependency);
+		expect(dispatcher.invoke()).toBeInstanceOf(Dependency);
 	});
 
 	it('can resolve multiple instances', function() {
