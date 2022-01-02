@@ -13,6 +13,7 @@ export class ContainerDispatcher {
 
 	protected namedParameters = new Map<string, any>();
 	protected typedParameters = new Map<Type<any>, any>();
+	protected positionalParameters = new Map<number, any>();
 
 	/**
 	 * Constructs a new `ContainerDispatcher` instance.
@@ -48,6 +49,19 @@ export class ContainerDispatcher {
 	 */
 	public setTypedParameter<T>(type: Type<T>, instance: T) {
 		this.typedParameters.set(type, instance);
+	}
+
+	/**
+	 * Sets a positional parameter for this dispatcher.
+	 *
+	 * When this dispatcher is used to resolve parameters for a method, any parameters which match the specified index
+	 * position (zero-baesd) will use the given value if they fail to resolve otherwise.
+	 *
+	 * @param index
+	 * @param value
+	 */
+	public setPositionalParameter(index: number, value: any) {
+		this.positionalParameters.set(index, value);
 	}
 
 	/**
@@ -97,6 +111,9 @@ export class ContainerDispatcher {
 			}
 			else if (this.namedParameters.has(parameter.name)) {
 				resolved.push(this.namedParameters.get(parameter.name));
+			}
+			else if (this.positionalParameters.has(parameter.index)) {
+				resolved.push(this.positionalParameters.get(parameter.index));
 			}
 			else if (parameter.hasDefault) {
 				resolved.push(undefined);

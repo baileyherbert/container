@@ -107,7 +107,7 @@ describe('Container', function() {
 
 			@Injectable
 			public testWithOptionals(dep: Dependency, optional = true) {
-				return dep;
+				return [dep, optional];
 			}
 		}
 
@@ -117,7 +117,18 @@ describe('Container', function() {
 		container.registerSingleton(Dependency);
 
 		expect(dispatcher.invoke(new Example(), 'test')).toBeInstanceOf(Dependency);
-		expect(dispatcher.invoke(new Example(), 'testWithOptionals')).toBeInstanceOf(Dependency);
+		expect(dispatcher.invoke(new Example(), 'testWithOptionals')[0]).toBeInstanceOf(Dependency);
+		expect(dispatcher.invoke(new Example(), 'testWithOptionals')[1]).toBe(true);
+
+		dispatcher.setPositionalParameter(1, false);
+		expect(dispatcher.invoke(new Example(), 'testWithOptionals')[1]).toBe(false);
+
+		dispatcher.setNamedParameter('optional', true);
+		expect(dispatcher.invoke(new Example(), 'testWithOptionals')[1]).toBe(true);
+
+		dispatcher.setTypedParameter(Dependency, null);
+		expect(dispatcher.invoke(new Example(), 'testWithOptionals')[0]).toBe(null);
+	});
 	});
 
 	it('can resolve multiple instances', function() {
