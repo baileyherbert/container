@@ -1,5 +1,7 @@
 import { ReflectionClass, ReflectionMethod, ReflectionParameter } from '@baileyherbert/reflection';
 import { Type } from '@baileyherbert/types';
+import { InjectionTokenResolvable } from '../decorators/Token';
+import { InjectionToken } from './Container';
 
 /**
  * This is an internal class which stores type information for classes and methods.
@@ -9,6 +11,7 @@ class ContainerRegistry {
 
 	protected classes = new Map<Type<any>, ReflectionParameter<any>[]>();
 	protected methods = new Map<Type<any>, Map<string, ReflectionParameter<any>[]>>();
+	protected parameterTokens = new Map<Type<any>, Map<string, Map<number, InjectionTokenResolvable>>>();
 
 	/**
 	 * Adds the given reflection object to the registry. Parameter types will automatically be detected from the
@@ -34,6 +37,27 @@ class ContainerRegistry {
 	}
 
 	/**
+	 * Overrides the injection token for the specified parameter.
+	 *
+	 * @param reflection
+	 * @param token
+	 */
+	public registerParameterToken(reflection: ReflectionParameter<any>, token: InjectionTokenResolvable) {
+		const target = reflection.method.class.target;
+
+		if (!this.parameterTokens.has(target)) {
+			this.parameterTokens.set(target, new Map());
+		}
+
+		if (!this.parameterTokens.get(target)!.has(reflection.method.name)) {
+			this.parameterTokens.get(target)!.set(reflection.method.name, new Map());
+		}
+
+		const params = this.parameterTokens.get(target)!.get(reflection.method.name)!;
+		params.set(reflection.index, token);
+	}
+
+	/**
 	 * Returns an array of parameter types for the given class type, or returns `undefined` if the class was not
 	 * registered.
 	 *
@@ -55,6 +79,25 @@ class ContainerRegistry {
 	 */
 	public getMethodParameters(type: Type<any>, methodName: string) {
 		return this.methods.get(type)?.get(methodName);
+	}
+
+	/**
+	 * Returns the injection token to use as an override for the specified parameter if applicable.
+	 *
+	 * @param type
+	 * @param methodName
+	 * @param parameterIndex
+	 * @returns
+	 */
+	public getParameterToken(type: Type<any>, methodName: string, parameterIndex: number): InjectionToken | undefined {
+		const resolver = this.parameterTokens.get(type)?.get(methodName)?.get(parameterIndex);
+
+		if (typeof resolver === 'function' && resolver.prototype === undefined) {
+			// @ts-ignore
+			return resolver();
+		}
+
+		return resolver;
 	}
 
 }

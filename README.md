@@ -104,6 +104,15 @@ export class ClassType {
 }
 ```
 
+Finally the `@Token` decorator can be applied to method parameters in order to specify or override the injection
+token. This is especially useful when dealing with circular dependencies.
+
+```ts
+public method(@Token('tokenName') param: any) {}
+public method(@Token(Class) param: any) {}
+public method(@Token(() => Class) param: any) {}
+```
+
 ### Resolution
 
 To resolve a single instance, use the `resolve` method. The last provider to be registered will be used.

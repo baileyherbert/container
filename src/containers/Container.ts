@@ -308,6 +308,12 @@ export class Container {
 		}
 
 		const params = paramTypes.map(param => {
+			const override = registry.getParameterToken(type, 'constructor', param.index);
+
+			if (typeof override !== 'undefined') {
+				return this.resolve(override);
+			}
+
 			if (param.hasDefault && (!param.isKnownType || !param.isClassType || param.isPrimitiveType)) {
 				return;
 			}

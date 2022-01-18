@@ -88,7 +88,13 @@ export class ContainerDispatcher {
 		}
 
 		for (const parameter of parameters) {
+			const overrideToken = registry.getParameterToken(type, methodName, parameter.index);
 			const paramType = parameter.getType() as Type<any>;
+
+			if (typeof overrideToken !== 'undefined') {
+				resolved.push(this.container.resolve(overrideToken));
+				continue;
+			}
 
 			if (typeof paramType === 'undefined') {
 				if (parameter.hasDefault) {
