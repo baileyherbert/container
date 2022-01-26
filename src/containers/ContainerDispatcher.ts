@@ -89,10 +89,11 @@ export class ContainerDispatcher {
 
 		for (const parameter of parameters) {
 			const overrideToken = registry.getParameterToken(type, methodName, parameter.index);
+			const context = registry.getParameterContext(type, methodName, parameter.index);
 			const paramType = parameter.getType() as Type<any>;
 
 			if (typeof overrideToken !== 'undefined') {
-				resolved.push(this.container.resolve(overrideToken));
+				resolved.push(this.container.resolve(overrideToken, context));
 				continue;
 			}
 
@@ -113,7 +114,7 @@ export class ContainerDispatcher {
 				resolved.push(this.typedParameters.get(paramType));
 			}
 			else if (parameter.isReflectableType && this.container.isRegistered(paramType, true)) {
-				resolved.push(this.container.resolve(paramType));
+				resolved.push(this.container.resolve(paramType, context));
 			}
 			else if (this.namedParameters.has(parameter.name)) {
 				resolved.push(this.namedParameters.get(parameter.name));

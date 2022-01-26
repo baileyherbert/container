@@ -8,3 +8,4 @@ export * from './decorators/Injectable';
 export * from './decorators/Singleton';
 export * from './decorators/Transient';
 export * from './decorators/Token';
+export * from './decorators/Context';

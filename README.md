@@ -161,22 +161,6 @@ Finally, use the `invoke` method to resolve dependencies, execute, and get the r
 const returnValue = dispatcher.invoke(object, 'methodName');
 ```
 
-### Context
-
-Containers can store basic state information which is available to all of its users.
-
-```ts
-container.setContext('service', 'ServiceName');
-container.setContext('id', 123);
-```
-
-Other parts of the application can retrieve the context.
-
-```ts
-const id = container.getContext<number>('id');
-const service = container.getContext<string>('ServiceName');
-```
-
 ### `resolver`
 
 This helper manages global container instances and makes it easy for various parts of the application to retrieve a
@@ -224,4 +208,55 @@ export class DependencyInjectedClass {
     protected container = resolver.getConstructorInstance();
     protected app = this.container.resolve(App);
 }
+```
+
+### Context
+
+When registering multiple values under a single token, **context** allows you to pick a specific instance out of the
+registry.
+
+#### Introduction
+
+Context is useful because it allows you to do things like this:
+
+```ts
+class Service {
+    constructor(
+        @Context('db:one') db1: Database,
+        @Context('db:two') db2: Database
+    ) {}
+}
+```
+
+In the above example, we have two different `Database` instances which have been registered with their database names
+as context, allowing us to easily pick out the instance(s) we need while still using the `Database` token.
+
+You can use string tokens for the same effect, but this permits some organization and works nicely with the
+`resolveAll()` method.
+
+#### Registration
+
+When registering an instance or value, you can pass a context value of any type. If there is already a contextual value
+under the same token with the same name, it will be overwritten.
+
+```ts
+container.registerInstance(new Class(), 'context');
+container.register(Class, {
+    useValue: new Class(),
+    useContext: 'context'
+});
+```
+
+### Resolution
+
+You can resolve a value from its context by passing the context into the `resolve()` method.
+
+```ts
+container.resolve(Class, 'context');
+```
+
+You can also use the `@Context()` decorator in a class or method parameter.
+
+```ts
+constructor(@Context('context') instance: Class) {}
 ```

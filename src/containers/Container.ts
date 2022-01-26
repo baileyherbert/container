@@ -11,6 +11,7 @@ import { TiedContainerDispatcher } from './TiedContainerDispatcher';
 export class Container {
 
 	protected _providers = new Map<InjectionToken, Registration[]>();
+	protected _contextProviders = new Map<InjectionToken, Map<any, Registration>>();
 	protected _scopedInstances = new Map<Registration, any>();
 	protected _context = new Map<string, any>();
 
@@ -88,7 +89,7 @@ export class Container {
 		if (typeof a === 'object' && 'constructor' in a && !('prototype' in a) && typeof b === 'undefined') {
 			const ref = new ReflectionClass<T>(a);
 
-			token = ref.ref;
+			token = ref.target;
 			providerOrType = { useValue: a };
 		}
 
@@ -103,10 +104,22 @@ export class Container {
 				}
 			}
 
-			this._providers.get(token)?.push({
+			const registration = {
 				provider: providerOrType,
 				options
-			});
+			};
+
+			// Register value provider contexts
+			if (isValueProvider(providerOrType) && providerOrType.useContext !== undefined) {
+				if (!this._contextProviders.has(token)) {
+					this._contextProviders.set(token, new Map());
+				}
+
+				this._contextProviders.get(token)!.set(providerOrType.useContext, registration);
+				return this;
+			}
+
+			this._providers.get(token)?.push(registration);
 		}
 
 		else if (isConstructor(providerOrType)) {
@@ -126,15 +139,21 @@ export class Container {
 	 * @param instance
 	 * @returns
 	 */
-	public registerInstance<T>(token: InjectionToken<T>, instance: T): this;
-	public registerInstance<T extends ClassObject>(instance: T): this;
-	public registerInstance<T>(token: InjectionToken<T> | ClassObject, instance?: T) {
+	public registerInstance<T>(token: InjectionToken<T>, instance: T, context?: any): this;
+	public registerInstance<T extends ClassObject>(instance: T, context?: any): this;
+	public registerInstance<T>(token: InjectionToken<T> | ClassObject, instance?: T | any, context?: any) {
 		if (isClassObject(token)) {
-			return this.register(token);
+			const ref = new ReflectionClass(token);
+
+			return this.register(ref.target, {
+				useValue: token,
+				useContext: instance
+			});
 		}
 
 		return this.register(token, {
-			useValue: instance
+			useValue: instance,
+			useContext: context
 		});
 	}
 
@@ -172,10 +191,11 @@ export class Container {
 	 * registered will be resolved.
 	 *
 	 * @param token
+	 * @param context
 	 * @returns
 	 */
-	public resolve<T>(token: InjectionToken<T>): T {
-		const registration = this.getRegistration(token, 'single');
+	public resolve<T>(token: InjectionToken<T>, context?: any): T {
+		const registration = this.getRegistration(token, 'single', context);
 
 		// Return an instance if available
 		if (registration !== undefined) {
@@ -309,16 +329,17 @@ export class Container {
 
 		const params = paramTypes.map(param => {
 			const override = registry.getParameterToken(type, 'constructor', param.index);
+			const context = registry.getParameterContext(type, 'constructor', param.index);
 
 			if (typeof override !== 'undefined') {
-				return this.resolve(override);
+				return this.resolve(override, context);
 			}
 
 			if (param.hasDefault && (!param.isKnownType || !param.isClassType || param.isPrimitiveType)) {
 				return;
 			}
 
-			return this.resolve(param.getType());
+			return this.resolve(param.getType(), context);
 		});
 
 		resolver._addConstructorInstance(this);
@@ -334,8 +355,9 @@ export class Container {
 	 *
 	 * @param token
 	 * @param type
+	 * @param context
 	 */
-	protected getRegistration<T>(token: InjectionToken<T>, type: 'single'): Registration<T> | undefined;
+	protected getRegistration<T>(token: InjectionToken<T>, type: 'single', context?: any): Registration<T> | undefined;
 
 	/**
 	 * Returns an array of all registrations for the given token in the current container and its parents.
@@ -348,7 +370,7 @@ export class Container {
 	 * @param type
 	 */
 	protected getRegistration<T>(token: InjectionToken<T>, type: 'all'): Registration<T>[];
-	protected getRegistration<T>(token: InjectionToken<T>, type: 'single' | 'all') {
+	protected getRegistration<T>(token: InjectionToken<T>, type: 'single' | 'all', context?: any) {
 		if (type === 'all') {
 			const registrations = [];
 
@@ -358,10 +380,22 @@ export class Container {
 
 			registrations.push(...(this._providers.get(token) ?? []));
 
+			if (this._contextProviders.has(token)) {
+				registrations.push(...this._contextProviders.get(token)!.values());
+			}
+
 			return registrations;
 		}
 
 		else if (type === 'single') {
+			if (context !== undefined && this._contextProviders.has(token)) {
+				const contextMap = this._contextProviders.get(token)!;
+
+				if (contextMap.has(context)) {
+					return contextMap.get(context)!;
+				}
+			}
+
 			const registrations = this._providers.get(token) ?? [];
 
 			if (registrations.length === 0 && this.parent !== undefined) {
@@ -392,6 +426,7 @@ export class Container {
 	 */
 	public reset() {
 		this._providers.clear();
+		this._contextProviders.clear();
 		this._context.clear();
 		this._scopedInstances.clear();
 	}
@@ -488,14 +523,29 @@ export type InjectionToken<T = any> = Type<T> | Constructor<T> | string | symbol
 export type Provider<T = any> = ValueProvider<T> | ClassProvider<T> | TokenProvider<T> | FactoryProvider<T>;
 
 export interface ValueProvider<T> {
+	/**
+	 * The value that will be resolved.
+	 */
 	useValue: T;
+
+	/**
+	 * When registering multiple values under the same token, you can provide context to discern between the values.
+	 * Otherwise, the token will be overwritten.
+	 */
+	useContext?: any;
 }
 
 export interface ClassProvider<T> {
+	/**
+	 * The class that will be instantiated.
+	 */
 	useClass: Constructor<T>;
 }
 
 export interface TokenProvider<T> {
+	/**
+	 * The token that will be resolved.
+	 */
 	useToken: InjectionToken<T>;
 }
 

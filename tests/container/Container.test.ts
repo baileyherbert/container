@@ -200,4 +200,36 @@ describe('Container', function() {
 		const test = container.resolve(Test);
 		expect(test.dep).toBeInstanceOf(Dep);
 	});
+
+	it('overwrites existing values', function() {
+		const container = new Container();
+
+		container.register('test', { useValue: 'a' });
+		container.register('test', { useValue: 'b' });
+
+		expect(container.resolve('test')).toBe('b');
+	});
+
+	it('allows multiple values under the same token with context', function() {
+		const container = new Container();
+
+		container.register('test', { useValue: 'a' });
+		container.register('test', { useValue: 'b', useContext: 'b' });
+		container.register('test', { useValue: 'c', useContext: 'c' });
+
+		expect(container.resolve('test')).toBe('a');
+		expect(container.resolve('test', 'b')).toBe('b');
+		expect(container.resolve('test', 'c')).toBe('c');
+	});
+
+	it('overwrites values with the same context', function() {
+		const container = new Container();
+
+		container.register('test', { useValue: 'a' });
+		container.register('test', { useValue: 'b', useContext: 'b' });
+		container.register('test', { useValue: 'c', useContext: 'b' });
+
+		expect(container.resolve('test')).toBe('a');
+		expect(container.resolve('test', 'b')).toBe('c');
+	});
 });

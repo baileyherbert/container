@@ -9,6 +9,7 @@ describe('main', function() {
 		expect(typeof Main.Singleton).toBe('function');
 		expect(typeof Main.Transient).toBe('function');
 		expect(typeof Main.Token).toBe('function');
+		expect(typeof Main.Context).toBe('function');
 		expect(typeof Main.Lifecycle).toBe('object');
 
 		expect(typeof Main.container).toBe('object');

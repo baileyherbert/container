@@ -12,6 +12,7 @@ class ContainerRegistry {
 	protected classes = new Map<Type<any>, ReflectionParameter<any>[]>();
 	protected methods = new Map<Type<any>, Map<string, ReflectionParameter<any>[]>>();
 	protected parameterTokens = new Map<Type<any>, Map<string, Map<number, InjectionTokenResolvable>>>();
+	protected parameterContexts = new Map<Type<any>, Map<string, Map<number, any>>>();
 
 	/**
 	 * Adds the given reflection object to the registry. Parameter types will automatically be detected from the
@@ -58,6 +59,27 @@ class ContainerRegistry {
 	}
 
 	/**
+	 * Registers context for the specified parameter.
+	 *
+	 * @param reflection
+	 * @param context
+	 */
+	public registerParameterContext(reflection: ReflectionParameter<any>, context: any) {
+		const target = reflection.method.class.target;
+
+		if (!this.parameterContexts.has(target)) {
+			this.parameterContexts.set(target, new Map());
+		}
+
+		if (!this.parameterContexts.get(target)!.has(reflection.method.name)) {
+			this.parameterContexts.get(target)!.set(reflection.method.name, new Map());
+		}
+
+		const params = this.parameterContexts.get(target)!.get(reflection.method.name)!;
+		params.set(reflection.index, context);
+	}
+
+	/**
 	 * Returns an array of parameter types for the given class type, or returns `undefined` if the class was not
 	 * registered.
 	 *
@@ -98,6 +120,18 @@ class ContainerRegistry {
 		}
 
 		return resolver;
+	}
+
+	/**
+	 * Returns the context for the specified parameter or `undefined` if not set.
+	 *
+	 * @param type
+	 * @param methodName
+	 * @param parameterIndex
+	 * @returns
+	 */
+	public getParameterContext(type: Type<any>, methodName: string, parameterIndex: number): any {
+		return this.parameterContexts.get(type)?.get(methodName)?.get(parameterIndex);
 	}
 
 }
