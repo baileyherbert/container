@@ -247,7 +247,7 @@ container.register(Class, {
 });
 ```
 
-### Resolution
+#### Resolution
 
 You can resolve a value from its context by passing the context into the `resolve()` method.
 
