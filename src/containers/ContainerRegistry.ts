@@ -138,6 +138,5 @@ class ContainerRegistry {
 
 /**
  * This is an internal object which stores type information for classes and methods.
- * @internal
  */
 export const registry = new ContainerRegistry();
