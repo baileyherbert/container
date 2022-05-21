@@ -12,6 +12,7 @@ import { registry } from './ContainerRegistry';
 export class ContainerDispatcher {
 
 	protected namedParameters = new Map<string, any>();
+	protected tokenParameters = new Map<any, any>();
 	protected typedParameters = new Map<Type<any>, any>();
 	protected positionalParameters = new Map<number, any>();
 
@@ -49,6 +50,19 @@ export class ContainerDispatcher {
 	 */
 	public setTypedParameter<T>(type: Type<T>, instance: T) {
 		this.typedParameters.set(type, instance);
+	}
+
+	/**
+	 * Sets a token parameter for this dispatcher.
+	 *
+	 * When this dispatcher is used to resolve parameters for a method, any parameters which match the given token
+	 * will use the given instance instead. This effectively overrides the container.
+	 *
+	 * @param token
+	 * @param instance
+	 */
+	public setTokenParameter(token: any, instance: any) {
+		this.tokenParameters.set(token, instance);
 	}
 
 	/**
@@ -91,6 +105,16 @@ export class ContainerDispatcher {
 			const overrideToken = registry.getParameterToken(type, methodName, parameter.index);
 			const context = registry.getParameterContext(type, methodName, parameter.index);
 			const paramType = parameter.getType() as Type<any>;
+
+			if (this.tokenParameters.has(overrideToken)) {
+				resolved.push(this.tokenParameters.get(overrideToken));
+				continue;
+			}
+
+			if (this.tokenParameters.has(paramType)) {
+				resolved.push(this.tokenParameters.get(paramType));
+				continue;
+			}
 
 			if (typeof overrideToken !== 'undefined') {
 				resolved.push(this.container.resolve(overrideToken, context));
