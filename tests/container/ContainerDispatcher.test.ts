@@ -72,6 +72,24 @@ describe('ContainerDispatcher', function() {
 		expect(dispatcher.invoke(test, 'B')).toBe(value);
 	});
 
+	it('can create clones', function() {
+		const dispatcher1 = container.createDispatcher();
+		const value1 = Symbol();
+		const value2 = Symbol();
+
+		dispatcher1.setNamedParameter('dep', value1);
+
+		const dispatcher2 = dispatcher1.clone();
+
+		expect(dispatcher1.resolveParameters(test, 'B')[0]).toBe(value1);
+		expect(dispatcher2.resolveParameters(test, 'B')[0]).toBe(value1);
+
+		dispatcher2.setNamedParameter('dep', value2);
+
+		expect(dispatcher1.resolveParameters(test, 'B')[0]).toBe(value1);
+		expect(dispatcher2.resolveParameters(test, 'B')[0]).toBe(value2);
+	});
+
 	describe('TiedContainerDispatcher', function() {
 		it('can resolve parameters on the target method', function() {
 			const dispatcher = container.createTiedDispatcher(test, 'B');
@@ -90,6 +108,24 @@ describe('ContainerDispatcher', function() {
 			dispatcher.setNamedParameter('dep', value);
 
 			expect(dispatcher.invoke()).toBe(value);
+		});
+
+		it('can create clones', function() {
+			const dispatcher1 = container.createTiedDispatcher(test, 'B');
+			const value1 = Symbol();
+			const value2 = Symbol();
+
+			dispatcher1.setNamedParameter('dep', value1);
+
+			const dispatcher2 = dispatcher1.clone();
+
+			expect(dispatcher1.resolveParameters()[0]).toBe(value1);
+			expect(dispatcher2.resolveParameters()[0]).toBe(value1);
+
+			dispatcher2.setNamedParameter('dep', value2);
+
+			expect(dispatcher1.resolveParameters()[0]).toBe(value1);
+			expect(dispatcher2.resolveParameters()[0]).toBe(value2);
 		});
 	});
 

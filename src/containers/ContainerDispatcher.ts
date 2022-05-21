@@ -173,6 +173,20 @@ export class ContainerDispatcher {
 		return fn.apply(object, params);
 	}
 
+	/**
+	 * Clones the current instance and returns a new instance with the same overrides.
+	 */
+	public clone() {
+		const instance = new ContainerDispatcher(this.container);
+
+		instance.namedParameters = new Map(this.namedParameters);
+		instance.tokenParameters = new Map(this.tokenParameters);
+		instance.typedParameters = new Map(this.typedParameters);
+		instance.positionalParameters = new Map(this.positionalParameters);
+
+		return instance;
+	}
+
 }
 
 type Return<T, K extends keyof T> = T[K] extends (...args: any[]) => any ? ReturnType<T[K]> : void;

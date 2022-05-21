@@ -1,8 +1,6 @@
-import { ReflectionClass } from '@baileyherbert/reflection';
-import { Delegate, Key, Type } from '@baileyherbert/types';
+import { Delegate } from '@baileyherbert/types';
 import { Container } from './Container';
 import { ContainerDispatcher } from './ContainerDispatcher';
-import { registry } from './ContainerRegistry';
 
 /**
  * This class is used to provide dependency injection for class methods which have the `@Injectable` decorator applied.
@@ -45,6 +43,20 @@ export class TiedContainerDispatcher extends ContainerDispatcher {
 		const params = this.resolveParameters();
 		const fn: Delegate<any> = (this.object as any)[this.methodName];
 		return fn.apply(this.object, params);
+	}
+
+	/**
+	 * Clones the current instance and returns a new instance with the same overrides.
+	 */
+	public override clone() {
+		const instance = new TiedContainerDispatcher(this.container, this.object, this.methodName);
+
+		instance.namedParameters = new Map(this.namedParameters);
+		instance.tokenParameters = new Map(this.tokenParameters);
+		instance.typedParameters = new Map(this.typedParameters);
+		instance.positionalParameters = new Map(this.positionalParameters);
+
+		return instance;
 	}
 
 }
