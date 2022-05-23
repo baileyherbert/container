@@ -237,10 +237,11 @@ export class Container {
 	 * Resolves all instances for the specified token.
 	 *
 	 * @param token
+	 * @param context
 	 * @returns
 	 */
-	public resolveAll<T>(token: InjectionToken<T>): T[] {
-		const registrations = this.getRegistration(token, 'all');
+	public resolveAll<T>(token: InjectionToken<T>, context?: any): T[] {
+		const registrations = this.getRegistration(token, 'all', context);
 		const instances = new Array<T>();
 
 		for (const registration of registrations) {
@@ -382,8 +383,9 @@ export class Container {
 	 *
 	 * @param token
 	 * @param type
+	 * @param context
 	 */
-	protected getRegistration<T>(token: InjectionToken<T>, type: 'all'): Registration<T>[];
+	protected getRegistration<T>(token: InjectionToken<T>, type: 'all', context?: any): Registration<T>[];
 	protected getRegistration<T>(token: InjectionToken<T>, type: 'single' | 'all', context?: any) {
 		context ??= this.getContext('defaultResolutionContext');
 
