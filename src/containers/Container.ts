@@ -247,7 +247,7 @@ export class Container {
 			instances.push(this.make(registration));
 		}
 
-		return instances;
+		return [...new Set(instances)];
 	}
 
 	/**
