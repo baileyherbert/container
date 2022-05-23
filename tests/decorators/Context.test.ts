@@ -36,4 +36,32 @@ describe('Context', function() {
 		expect(methodParams[1]).toBeInstanceOf(B);
 		expect(methodParams[2]).toBe(c);
 	});
+
+	it('supports the defaultResolutionContext variable', function() {
+		class Dep {}
+
+		@Injectable
+		class Service {
+			constructor(public o: Dep) {}
+		}
+
+		const a = new Dep();
+		const b = new Dep();
+
+		container.registerInstance(a, 'withContext');
+		container.registerInstance(b);
+
+		expect(container.resolve(Service).o).toBe(b);
+
+		container.setContext('defaultResolutionContext', 'withContext')
+		expect(container.resolve(Service).o).toBe(a);
+
+		container.removeContext('defaultResolutionContext');
+		expect(container.resolve(Service).o).toBe(b);
+
+		container.setContext('defaultResolutionContext', 'withNonexistentContext')
+		expect(container.resolve(Service).o).toBe(b);
+
+		container.removeContext('defaultResolutionContext');
+	});
 });

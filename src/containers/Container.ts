@@ -329,7 +329,10 @@ export class Container {
 
 		const params = paramTypes.map(param => {
 			const override = registry.getParameterToken(type, 'constructor', param.index);
-			const context = registry.getParameterContext(type, 'constructor', param.index);
+			const context = (
+				registry.getParameterContext(type, 'constructor', param.index) ??
+				this.getContext('defaultResolutionContext')
+			);
 
 			if (typeof override !== 'undefined') {
 				return this.resolve(override, context);
