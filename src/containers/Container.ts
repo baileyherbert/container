@@ -397,6 +397,26 @@ export class Container {
 			registrations.push(...(this._providers.get(token) ?? []));
 
 			if (this._contextProviders.has(token)) {
+				if (context) {
+					const contextProviders = this._contextProviders.get(token)!;
+
+					if (Array.isArray(context)) {
+						for (const contextToken of context) {
+							const match = contextProviders.get(contextToken);
+
+							if (match) {
+								registrations.push(match);
+							}
+						}
+					}
+					else {
+						const match = contextProviders.get(container);
+
+						if (match) {
+							registrations.push(match);
+						}
+					}
+				}
 				registrations.push(...this._contextProviders.get(token)!.values());
 			}
 
