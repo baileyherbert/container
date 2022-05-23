@@ -385,6 +385,8 @@ export class Container {
 	 */
 	protected getRegistration<T>(token: InjectionToken<T>, type: 'all'): Registration<T>[];
 	protected getRegistration<T>(token: InjectionToken<T>, type: 'single' | 'all', context?: any) {
+		context ??= this.getContext('defaultResolutionContext');
+
 		if (type === 'all') {
 			const registrations = [];
 
