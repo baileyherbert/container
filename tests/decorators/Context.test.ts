@@ -64,4 +64,26 @@ describe('Context', function() {
 
 		container.removeContext('defaultResolutionContext');
 	});
+
+	it('supports arrays of context', function() {
+		class Dep {}
+
+		const a = new Dep();
+		const b = new Dep();
+		const c = new Dep();
+
+		container.registerInstance(a, 'a');
+		container.registerInstance(b, 'b');
+		container.registerInstance(c, ['c', 'd']);
+
+		expect(container.resolve(Dep, 'a')).toBe(a);
+		expect(container.resolve(Dep, ['a'])).toBe(a);
+		expect(container.resolve(Dep, ['a', 'b'])).toBe(a);
+		expect(container.resolve(Dep, 'b')).toBe(b);
+		expect(container.resolve(Dep, ['b'])).toBe(b);
+		expect(container.resolve(Dep, ['b', 'a'])).toBe(b);
+
+		expect(container.resolve(Dep, 'c')).toBe(c);
+		expect(container.resolve(Dep, 'd')).toBe(c);
+	});
 });

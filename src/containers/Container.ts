@@ -115,7 +115,18 @@ export class Container {
 					this._contextProviders.set(token, new Map());
 				}
 
-				this._contextProviders.get(token)!.set(providerOrType.useContext, registration);
+				const context = providerOrType.useContext;
+				const contextProviders = this._contextProviders.get(token)!;
+
+				if (Array.isArray(context)) {
+					for (const contextToken of context) {
+						contextProviders.set(contextToken, registration);
+					}
+				}
+				else {
+					contextProviders.set(context, registration);
+				}
+
 				return this;
 			}
 
@@ -394,8 +405,20 @@ export class Container {
 			if (context !== undefined && this._contextProviders.has(token)) {
 				const contextMap = this._contextProviders.get(token)!;
 
-				if (contextMap.has(context)) {
-					return contextMap.get(context)!;
+				// Handle individual context tokens
+				if (!Array.isArray(context)) {
+					if (contextMap.has(context)) {
+						return contextMap.get(context)!;
+					}
+				}
+
+				// Handle arrays of context tokens
+				else {
+					for (const contextToken of context) {
+						if (contextMap.has(contextToken)) {
+							return contextMap.get(contextToken)!;
+						}
+					}
 				}
 			}
 

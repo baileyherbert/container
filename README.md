@@ -239,6 +239,9 @@ You can use string tokens for the same effect, but this permits some organizatio
 When registering an instance or value, you can pass a context value of any type. If there is already a contextual value
 under the same token with the same name, it will be overwritten.
 
+Please note that when supplying an array for your context, it will be destructured into multiple contexts. This only
+happens for arrays, not any other types (such as sets).
+
 ```ts
 container.registerInstance(new Class(), 'context');
 container.register(Class, {
@@ -259,4 +262,11 @@ You can also use the `@Context()` decorator in a class or method parameter.
 
 ```ts
 constructor(@Context('context') instance: Class) {}
+```
+
+You can also pass an array of contexts to match against. The container will attempt to resolve a value for each context
+in the order specified, until a match is found and returned.
+
+```ts
+container.resolve(Class, ['contextA', 'contextB']);
 ```
