@@ -393,13 +393,11 @@ export class Container {
 			const registrations = [];
 
 			if (this.parent !== undefined) {
-				registrations.unshift(...this.parent.getRegistration(token, 'all'));
+				registrations.unshift(...this.parent.getRegistration(token, 'all', context));
 			}
 
-			registrations.push(...(this._providers.get(token) ?? []));
-
-			if (this._contextProviders.has(token)) {
-				if (context) {
+			if (context) {
+				if (this._contextProviders.has(token)) {
 					const contextProviders = this._contextProviders.get(token)!;
 
 					if (Array.isArray(context)) {
@@ -419,7 +417,9 @@ export class Container {
 						}
 					}
 				}
-				registrations.push(...this._contextProviders.get(token)!.values());
+			}
+			else {
+				registrations.push(...(this._providers.get(token) ?? []));
 			}
 
 			return registrations;
