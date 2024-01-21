@@ -40,6 +40,12 @@
 	"jest": {
 		"preset": "ts-jest",
 		"testEnvironment": "node",
+		"rootDir": ".",
+		"testMatch": ["<rootDir>/tests/**/*.test.ts", "<rootDir>/tests/**/*.spec.ts"],
+		"moduleNameMapper": {
+			"^src/?$": "<rootDir>/src/index.ts",
+			"^src/(.*)$": "<rootDir>/src/$1"
+		},
 		"transform": {
 			"^.+\\.tsx?$": ["ts-jest", {
 				"tsconfig": "tests/tsconfig.json"
